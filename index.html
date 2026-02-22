@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>Clicker v20 Web</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    text-align:center;
+    transition:0.3s;
+}
+button{
+    padding:15px 25px;
+    font-size:18px;
+    margin:10px;
+    cursor:pointer;
+}
+#game,#shop{display:none;}
+.shopBox{
+    border:2px solid black;
+    padding:20px;
+    margin:20px;
+    display:inline-block;
+}
+input{
+    padding:8px;
+    font-size:16px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- ЛОББІ -->
+<div id="lobby">
+    <h1>КЛИКЕР v20</h1>
+    <button onclick="startGame()" style="background:green;color:white;">
+        ИГРАТЬ
+    </button>
+</div>
+
+<!-- ГРА -->
+<div id="game">
+    <h2 id="balance"></h2>
+    <h4 id="stats"></h4>
+
+    <button id="mainBtn" onclick="doClick()" style="font-size:30px;background:orange;">
+        КЛИКНИ
+    </button>
+    <br>
+    <button onclick="openShop()" style="background:lightblue;">МАГАЗИН</button>
+    <button onclick="goLobby()">В МЕНЮ</button>
+</div>
+
+<!-- МАГАЗИН -->
+<div id="shop">
+    <div class="shopBox">
+        <h3>--- ЗА КЛИКИ ---</h3>
+        <button onclick="buyPower()" id="powerBtn"></button>
+        <button onclick="doRebit()">СДЕЛАТЬ РЕСЕТ (1000 кл.)</button>
+    </div>
+
+    <div class="shopBox">
+        <h3>--- ЗА РЕБИТЫ ---</h3>
+        <button onclick="buyAuto()" id="autoBtn"></button>
+        <button onclick="unlockCodes()" id="codeUnlockBtn"></button>
+
+        <div id="codesArea" style="display:none;">
+            <p>ВВЕДИТЕ ЧИСЛО ИЛИ / :</p>
+            <input id="codeInput">
+            <button onclick="applyCode()">АКТИВИРОВАТЬ</button>
+        </div>
+    </div>
+
+    <br>
+    <button onclick="closeShop()" style="background:pink;">ЗАКРЫТЬ</button>
+</div>
+
+<script>
+let clicks=0;
+let rebits=0;
+let click_pwr=1;
+let auto_lvl=0;
+let codes_paid=false;
+let inf_mode=false;
+
+function save(){
+    localStorage.setItem("clickerV20",
+        JSON.stringify({clicks,rebits,click_pwr,auto_lvl,codes_paid,inf_mode})
+    );
+}
+function load(){
+    let data=localStorage.getItem("clickerV20");
+    if(data){
+        let d=JSON.parse(data);
+        clicks=d.clicks;
+        rebits=d.rebits;
+        click_pwr=d.click_pwr;
+        auto_lvl=d.auto_lvl;
+        codes_paid=d.codes_paid;
+        inf_mode=d.inf_mode;
+    }
+}
+
+function startGame(){
+    load();
+    document.getElementById("lobby").style.display="none";
+    document.getElementById("game").style.display="block";
+    updateUI();
+}
+
+function goLobby(){
+    document.getElementById("game").style.display="none";
+    document.getElementById("shop").style.display="none";
+    document.getElementById("lobby").style.display="block";
+}
+
+function getBg(){
+    if(inf_mode) return "black";
+    if(clicks>=1000) return "#FFD700";
+    if(clicks>=500) return "#FF69B4";
+    if(clicks>=250) return "#DA70D6";
+    if(clicks>=100) return "#90ee90";
+    if(clicks>=50) return "#add8e6";
+    if(clicks>=10) return "#ffff00";
+    return "white";
+}
+
+function updateUI(){
+    document.body.style.background=getBg();
+    document.getElementById("balance").innerText=
+        "Баланс: "+(inf_mode?"INF":Math.floor(clicks));
+    document.getElementById("stats").innerText=
+        "Сила: "+click_pwr+" | Ребиты: "+rebits;
+
+    document.getElementById("powerBtn").innerText=
+        "Сила +1 (Цена: "+(click_pwr*25)+" кл.)";
+
+    document.getElementById("autoBtn").innerText=
+        "Автоклик ур."+ (auto_lvl+1) +
+        " (Цена: "+(2+auto_lvl*2)+" Реб.)";
+
+    document.getElementById("codeUnlockBtn").innerText=
+        codes_paid ? "Коды открыты" : "Открыть коды (1 Реб.)";
+
+    document.getElementById("codesArea").style.display=
+        codes_paid ? "block":"none";
+
+    document.getElementById("mainBtn").innerText=
+        inf_mode ? "БЕЗДНА" : "КЛИКНИ";
+
+    save();
+}
+
+function doClick(){
+    if(!inf_mode) clicks+=click_pwr;
+    updateUI();
+}
+
+function buyPower(){
+    let price=click_pwr*25;
+    if(clicks>=price){
+        clicks-=price;
+        click_pwr+=1;
+        updateUI();
+    } else alert("Мало кликов!");
+}
+
+function buyAuto(){
+    let price=2+auto_lvl*2;
+    if(rebits>=price){
+        rebits-=price;
+        auto_lvl++;
+        updateUI();
+    } else alert("Мало ребитов!");
+}
+
+function doRebit(){
+    if(clicks>=1000 || inf_mode){
+        clicks=0;
+        rebits++;
+        click_pwr=1;
+        updateUI();
+        alert("Ребит сделан!");
+    } else alert("Нужно 1000 кликов!");
+}
+
+function unlockCodes(){
+    if(codes_paid) return;
+    if(rebits>=1){
+        rebits--;
+        codes_paid=true;
+        updateUI();
+        alert("Коды открыты!");
+    } else alert("Нужен 1 ребит!");
+}
+
+function applyCode(){
+    let txt=document.getElementById("codeInput").value.trim();
+    if(txt==="/"){
+        inf_mode=true;
+        alert("INFINITY MODE!");
+    }
+    else if(!isNaN(txt)){
+        clicks+=parseInt(txt);
+        alert("Добавлено: +"+txt);
+    }
+    else alert("Вводи число или /");
+
+    document.getElementById("codeInput").value="";
+    updateUI();
+}
+
+function openShop(){
+    document.getElementById("game").style.display="none";
+    document.getElementById("shop").style.display="block";
+}
+function closeShop(){
+    document.getElementById("shop").style.display="none";
+    document.getElementById("game").style.display="block";
+}
+
+setInterval(()=>{
+    if(auto_lvl>0 && !inf_mode){
+        clicks+=auto_lvl;
+        updateUI();
+    }
+},1000);
+</script>
+
+</body>
+</html>
