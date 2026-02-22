@@ -138,8 +138,13 @@ function updateUI(){
     document.getElementById("stats").innerText=
         "Сила: "+click_pwr+" | Ребиты: "+rebits;
 
-    document.getElementById("powerBtn").innerText=
-        "Сила +1 (Цена: "+(click_pwr*25)+" кл.)";
+    let nextLevel = click_pwr + 1;
+    let price = click_pwr * 25;
+
+    document.getElementById("powerBtn").innerText =
+        "Сила: " + click_pwr +
+        " → " + nextLevel +
+        " (Цена: " + price + " кл.)";
 
     let autoPrice = 2 + auto_lvl * 2;
 
