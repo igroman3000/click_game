@@ -39,6 +39,9 @@ input{
     <button onclick="startGame()" style="background:green;color:white;">
         ИГРАТЬ
     </button>
+        <button onclick="resetProgress()" style="background:red;color:white;">
+        ОЧИСТИТЬ ПРОГРЕСС
+    </button>
 </div>
 
 <!-- ГРА -->
@@ -138,9 +141,12 @@ function updateUI(){
     document.getElementById("powerBtn").innerText=
         "Сила +1 (Цена: "+(click_pwr*25)+" кл.)";
 
-    document.getElementById("autoBtn").innerText=
-        "Автоклик ур."+ (auto_lvl+1) +
-        " (Цена: "+(2+auto_lvl*2)+" Реб.)";
+    let autoPrice = 2 + auto_lvl * 2;
+
+    document.getElementById("autoBtn").innerText =
+        "Автоклик: " + auto_lvl +
+        " → " + (auto_lvl + 1) +
+        " (Цена: " + autoPrice + " Реб.)";
 
     document.getElementById("codeUnlockBtn").innerText=
         codes_paid ? "Коды открыты" : "Открыть коды (1 Реб.)";
@@ -220,6 +226,13 @@ function openShop(){
 function closeShop(){
     document.getElementById("shop").style.display="none";
     document.getElementById("game").style.display="block";
+}
+
+function resetProgress(){
+    if(confirm("Точно удалить весь прогресс?")){
+        localStorage.removeItem("clickerV20");
+        location.reload();
+    }
 }
 
 setInterval(()=>{
